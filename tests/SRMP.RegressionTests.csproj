@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\SRMP\Networking\PacketFraming.cs" Link="PacketFraming.cs" />
+    <Compile Include="..\SRMP\Networking\NetworkIdentity.cs" Link="NetworkIdentity.cs" />
+    <Compile Include="..\SRMP\Networking\RegionOwnership.cs" Link="RegionOwnership.cs" />
+    <Compile Include="..\SRMP\Utils\AtomicFile.cs" Link="AtomicFile.cs" />
+    <Compile Include="..\SRMP\Utils\ServerCode.cs" Link="ServerCode.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,27 @@
+The following console Commands work in the pop up console 
+
+cheat money [amount]
+	Add or Remove the given amount from the curret money score
+
+cheat keys [amount]
+	Add or Remove the given amount of keys from the current amount
+
+cheat allgadgets
+	Unlocks all of the gagets in the game
+	
+cheat spawn [id] ([amount])
+	spawns given item for the given ammount
+
+tp [(optional)TargetPlayer] [DestinationPlayer]
+	Teleports the player in spot 1 to player/destination entered
+	if spot 1 is empty the palayer that entered in the command in infered as the target
+listplayers
+	Prints the list of current players to the console
+
+sleep [Hours]
+	Sleep command followed by the time in in game hours to "sleep"". Fast forwards the game the alotted hours.
+
+console [enable/disable] [logtype]
+	Sets whether a specific log type should be displaying in the console. 
+	All type default to enabled.
+	Log Types: Error, Assert, Warning, Log, Exception

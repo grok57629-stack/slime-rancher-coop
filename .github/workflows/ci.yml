@@ -1,0 +1,166 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'ci/**'
+      - 'fix/**'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate SRMP revival tooling
+    runs-on: windows-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate PowerShell syntax
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $files = @(
+            'installer/Install-SRMP.ps1',
+            'installer/Uninstall-SRMP.ps1',
+            'scripts/Build-SRMP.ps1',
+            'scripts/Package-Release.ps1'
+          )
+
+          foreach ($file in $files) {
+            if (-not (Test-Path -LiteralPath $file)) {
+              throw "Missing required script: $file"
+            }
+
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $file),
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "${file}: $($_.Message)" }
+              throw "PowerShell syntax validation failed for $file"
+            }
+          }
+
+          Write-Host 'PowerShell syntax validation passed.'
+
+      - name: Validate installer and build layout
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $required = @(
+            'Install SRMP.cmd',
+            'Uninstall SRMP.cmd',
+            'Build SRMP.cmd',
+            'installer/Install-SRMP.ps1',
+            'installer/Uninstall-SRMP.ps1',
+            'scripts/Build-SRMP.ps1',
+            'scripts/Package-Release.ps1',
+            'SRMP/SRMP.csproj',
+            'Libs/Assembly-CSharp_publicized.dll',
+            'Libs/SRML.dll'
+          )
+
+          foreach ($path in $required) {
+            if (-not (Test-Path -LiteralPath $path)) {
+              throw "Required file is missing: $path"
+            }
+          }
+
+          $installer = Get-Content -LiteralPath 'installer/Install-SRMP.ps1' -Raw
+          if ($installer -notmatch 'SRML\\Mods') {
+            throw 'Installer no longer targets SRML\\Mods.'
+          }
+
+      - name: Validate external game-reference contract
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $project = Get-Content -LiteralPath 'SRMP/SRMP.csproj' -Raw
+          $builder = Get-Content -LiteralPath 'scripts/Build-SRMP.ps1' -Raw
+
+          $externalReferences = @(
+            '0Harmony.dll',
+            'DOTween.dll',
+            'InControl.dll',
+            'Unity.TextMeshPro.dll',
+            'UnityEngine.dll',
+            'UnityEngine.AnimationModule.dll',
+            'UnityEngine.AssetBundleModule.dll',
+            'UnityEngine.CoreModule.dll',
+            'UnityEngine.IMGUIModule.dll',
+            'UnityEngine.InputLegacyModule.dll',
+            'UnityEngine.InputModule.dll',
+            'UnityEngine.JSONSerializeModule.dll',
+            'UnityEngine.PhysicsModule.dll',
+            'UnityEngine.TextCoreModule.dll',
+            'UnityEngine.TextRenderingModule.dll',
+            'UnityEngine.UI.dll',
+            'UnityEngine.UIModule.dll'
+          )
+
+          foreach ($reference in $externalReferences) {
+            if ($project -notmatch [regex]::Escape($reference)) {
+              throw "Expected project reference is missing from SRMP.csproj: $reference"
+            }
+          }
+
+          if ($project -notmatch 'GameManagedPath') {
+            throw 'SRMP.csproj must configure GameManagedPath in AssemblySearchPaths.'
+          }
+          if ($project -notmatch 'SRMLLibPath') {
+            throw 'SRMP.csproj must configure SRMLLibPath in AssemblySearchPaths.'
+          }
+          if ($builder -notmatch 'SlimeRancher_Data\\Managed') {
+            throw 'Build-SRMP.ps1 no longer resolves game Managed assemblies.'
+          }
+          if ($builder -notmatch 'SRML\\Libs') {
+            throw 'Build-SRMP.ps1 no longer resolves SRML libraries.'
+          }
+          if ($builder -notmatch 'GameManagedPath') {
+            throw 'Build-SRMP.ps1 must pass GameManagedPath to MSBuild.'
+          }
+          if ($builder -notmatch 'SRMLLibPath') {
+            throw 'Build-SRMP.ps1 must pass SRMLLibPath to MSBuild.'
+          }
+
+          Write-Host 'External reference contract is complete.'
+          Write-Host 'References are resolved dynamically in place via AssemblySearchPaths.'
+          Write-Host 'The real SRMP DLL build runs on a Windows machine with a licensed Slime Rancher 1 + SRML installation.'
+
+      - name: Run installer test suite
+        shell: pwsh
+        run: |
+          & ./scripts/Test-Installer.ps1
+
+      - name: Run transport and save regression tests
+        shell: pwsh
+        run: |
+          dotnet run --project tests/SRMP.RegressionTests.csproj
+
+      - name: Verify hosted runner does not contain proprietary game assemblies
+        shell: pwsh
+        run: |
+          $localOnly = @(
+            'SRMP/UnityEngine.CoreModule.dll',
+            'SRMP/UnityCoreMod.dll',
+            'SRMP/0Harmony.dll'
+          )
+          foreach ($path in $localOnly) {
+            if (Test-Path -LiteralPath $path) {
+              throw "A machine-local/proprietary reference was accidentally committed: $path"
+            }
+          }
+          Write-Host 'No machine-local game references are committed.'

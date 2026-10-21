@@ -1,0 +1,18 @@
+[Unit]
+Description=SRMP Slime Rancher headless host
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=srmp
+WorkingDirectory=/opt/srmp/serveur
+Environment="SRMP_GAME_DIR=/opt/slime-rancher"
+Environment="SRMP_PROTON=/home/srmp/.steam/steam/steamapps/common/Proton - Experimental/proton"
+Environment="STEAM_COMPAT_CLIENT_INSTALL_PATH=/home/srmp/.steam/steam"
+ExecStart=/bin/bash /opt/srmp/serveur/run.sh
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

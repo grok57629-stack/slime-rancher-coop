@@ -1,0 +1,22 @@
+{
+  "Enabled": false,
+  "Username": "SRMP Server",
+  "GameName": "",
+  "LoadLatestSave": true,
+  "NewGameDisplayName": "SRMP Server",
+  "GameMode": "CLASSIC",
+  "CreateGameIfMissing": true,
+  "MaxPlayers": 8,
+  "GodMode": true,
+  "PauseWhenNoPlayers": true,
+  "TargetFrameRate": 60,
+  "IdleTargetFrameRate": 12,
+  "OperatorProductUserIds": [],
+  "StartupDelaySeconds": 3,
+  "LoginTimeoutSeconds": 60,
+  "LoadTimeoutSeconds": 300,
+  "ServerCodeFile": "servercode.txt",
+  "ShutdownRequestFile": "shutdown.request",
+  "StatusIntervalSeconds": 60,
+  "AutoSaveIntervalSeconds": 300
+}
