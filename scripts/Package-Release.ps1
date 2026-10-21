@@ -37,9 +37,25 @@ New-Item -ItemType Directory -Path (Join-Path $stage 'serveur') -Force | Out-Nul
 Copy-Item -LiteralPath (Join-Path $root 'Install SRMP.cmd') -Destination $stage
 Copy-Item -LiteralPath (Join-Path $root 'Uninstall SRMP.cmd') -Destination $stage
 Copy-Item -LiteralPath (Join-Path $root 'README-FIRST.txt') -Destination $stage
+Copy-Item -LiteralPath (Join-Path $root 'README.md') -Destination $stage -ErrorAction SilentlyContinue
+Copy-Item -LiteralPath (Join-Path $root 'README_RU.md') -Destination $stage -ErrorAction SilentlyContinue
+Copy-Item -LiteralPath (Join-Path $root 'README_EN.md') -Destination $stage -ErrorAction SilentlyContinue
+Copy-Item -LiteralPath (Join-Path $root 'CREDITS.md') -Destination $stage -ErrorAction SilentlyContinue
+if (Test-Path (Join-Path $root 'launcher\Coop-Manager.cmd')) {
+    Copy-Item -LiteralPath (Join-Path $root 'launcher\Coop-Manager.cmd') -Destination $stage
+    Copy-Item -LiteralPath (Join-Path $root 'launcher\Coop-Manager.ps1') -Destination $stage
+    Copy-Item -LiteralPath (Join-Path $root 'launcher\Install-Coop.cmd') -Destination $stage
+    Copy-Item -LiteralPath (Join-Path $root 'launcher\Install-Coop.ps1') -Destination $stage
+    Copy-Item -LiteralPath (Join-Path $root 'launcher\Uninstall-Coop.cmd') -Destination $stage
+    Copy-Item -LiteralPath (Join-Path $root 'launcher\Uninstall-Coop.ps1') -Destination $stage
+}
+if (Test-Path "C:\Users\top34\.gemini\antigravity\scratch\downloads\SRMLInstaller\SRMLInstaller.exe") {
+    Copy-Item -LiteralPath "C:\Users\top34\.gemini\antigravity\scratch\downloads\SRMLInstaller\SRMLInstaller.exe" -Destination $stage
+}
 Copy-Item -LiteralPath (Join-Path $root 'installer\Install-SRMP.ps1') -Destination (Join-Path $stage 'installer')
 Copy-Item -LiteralPath (Join-Path $root 'installer\Uninstall-SRMP.ps1') -Destination (Join-Path $stage 'installer')
 Copy-Item -LiteralPath $SrmpDll -Destination (Join-Path $stage 'payload\SRMP.dll')
+Copy-Item -LiteralPath $SrmpDll -Destination (Join-Path $stage 'SRMP.dll')
 Copy-Item -Path (Join-Path $root 'serveur\*') -Destination (Join-Path $stage 'serveur') -Recurse -Force
 
 $dllHash = (Get-FileHash -LiteralPath (Join-Path $stage 'payload\SRMP.dll') -Algorithm SHA256).Hash
